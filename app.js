@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet'); // Recomiendo agregar helmet para seguridad
 const morgan = require('morgan'); // Opcional: para logging de solicitudes
+const cookieParser = require('cookie-parser'); // I
 
 // Importar rutas
 const userRoutes = require('./routes/users');
@@ -33,8 +34,13 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Middleware de cookies 
+app.use(cookieParser()); // Esto permite leer las cookies en req.cookies y  debe estar antes de las rutas
+
 // Rutas o endpoints
 app.use('/api/users', userRoutes);
+
+
 
 // Middleware para manejar rutas no encontradas
 app.use((req, res, next) => {

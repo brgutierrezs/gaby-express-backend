@@ -30,6 +30,7 @@
 const app = require('./app'); // Importar la app configurada
 const sequelize = require('./config/database');// Importar la app configurada
 
+
 //probar la coneccion con sequelize y sincronizar modelos
 // Iniciar el servidor después de la conexión a la base de datos
 sequelize.connectDatabase()
