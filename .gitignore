@@ -1,4 +1,11 @@
-.env
+# Ignorar dependencias
 node_modules/
+
+# Ignorar variables de entorno
+.env
+
+# Ignorar archivos de bloqueo (opcional)
 package-lock.json
+
+# Ignorar logs de depuración
 npm-debug.log
