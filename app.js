@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser'); // I
 
 // Importar rutas
 const userRoutes = require('./routes/users');
+const productRoutes = require('./routes/product');
 
 // Crear la instancia de la app
 const app = express();
@@ -39,6 +40,7 @@ app.use(cookieParser()); // Esto permite leer las cookies en req.cookies y  debe
 
 // Rutas o endpoints
 app.use('/api/users', userRoutes);
+app.use('/api/product', productRoutes);
 
 
 

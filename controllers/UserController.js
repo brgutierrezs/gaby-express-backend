@@ -2,7 +2,6 @@
 const { User } = require("../models/index");
 const { sendResponse } = require('../helpers/response');
 const bcrypt = require('bcrypt')
-const cookieParser = require('cookie-parser');
 const { generateToken } = require('../services/token/jwt');
 
 //Controlador para obtener todos los usuarios
