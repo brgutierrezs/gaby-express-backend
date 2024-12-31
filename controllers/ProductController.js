@@ -14,7 +14,8 @@ const getProducts = async (req, res) => {
             limit = 10,
             order = 'id',
             sort = 'DESC',
-            search = ''
+            search = '',
+            id=''
 
         } = req.query;
 
@@ -22,12 +23,23 @@ const getProducts = async (req, res) => {
         const offset = (page - 1) * limit;
 
         // Configuración de filtros y búsqueda
-        const whereCondition = search ? {
-            [Op.or]: [
-                { name: { [Op.like]: `%${search}%` } },
-                { description: { [Op.like]: `%${search}%` } }
-            ]
-        } : {};
+        // const whereCondition = search ? {
+        //     [Op.or]: [
+        //         { name: { [Op.like]: `%${search}%` } },
+        //         { description: { [Op.like]: `%${search}%` } },
+               
+        //     ]
+        // } : {};
+
+        const whereCondition = {
+            ...(search && {
+                [Op.or]:[
+                    { name: { [Op.like]: `%${search}%` } },
+                { description: { [Op.like]: `%${search}%` } },
+                ]
+            }),
+            ...(id && {id: id})
+        };
 
         // Búsqueda con múltiples opciones
         const { count, rows: products } = await Product.findAndCountAll({
