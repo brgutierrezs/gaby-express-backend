@@ -5,5 +5,6 @@ const ProductController = require('../controllers/ProductController');
 
 //ruta de prueba 
 router.get('/all-product', ProductController.getProducts);
+router.post('/create-product', ProductController.setProduct);
 
 module.exports = router;

@@ -1,11 +1,12 @@
 const { Product, Category, ProductImage } = require("../models/index");
 const { Op } = require('sequelize');
-
+const { validateProduct } = require('../helpers/validations/productSchema');
+const { sequelize } = require('../config/database');
 
 //endpoint para obtener todos los productos
 const getProducts = async (req, res) => {
 
-   
+
 
     try {
         //desestructuramos los parametros que vengan en la query
@@ -15,7 +16,7 @@ const getProducts = async (req, res) => {
             order = 'id',
             sort = 'DESC',
             search = '',
-            id=''
+            id = ''
 
         } = req.query;
 
@@ -27,18 +28,18 @@ const getProducts = async (req, res) => {
         //     [Op.or]: [
         //         { name: { [Op.like]: `%${search}%` } },
         //         { description: { [Op.like]: `%${search}%` } },
-               
+
         //     ]
         // } : {};
 
         const whereCondition = {
             ...(search && {
-                [Op.or]:[
+                [Op.or]: [
                     { name: { [Op.like]: `%${search}%` } },
-                { description: { [Op.like]: `%${search}%` } },
+                    { description: { [Op.like]: `%${search}%` } },
                 ]
             }),
-            ...(id && {id: id})
+            ...(id && { id: id })
         };
 
         // Búsqueda con múltiples opciones
@@ -61,7 +62,7 @@ const getProducts = async (req, res) => {
                 {
                     model: ProductImage,
                     attributes: ['id', 'image_url'],
-                   
+
                 }
             ]
         });
@@ -92,8 +93,101 @@ const getProducts = async (req, res) => {
 
 }
 
+const setProduct = async (req, res) => {
+
+    // Las transacciones permiten ejecutar múltiples operaciones de base de datos como una única unidad atómica - o todas las operaciones se completan exitosamente, o ninguna se aplica.
+    const transaction = await sequelize.transaction();
+
+    try {
+
+        //traemos los parametros desde el body
+        const { isValid, data, errors } = await validateProduct(req.body);
+
+        // console.log('es valido?',isValid)
+        // console.log("la data del body",data)
+        // console.log("errores",errors)
+
+        //validar que vengan los datos con la biblioteca yup
+        if (!isValid) {
+            return res.status(400).json({
+                success: false,
+                errors
+            });
+        }
+
+        // verificar que la categoria existe
+        const category = await Category.findByPk(data.categoryId);
+        if (!category) {
+            return res.status(404).json({
+                succes: false,
+                message: "La categoria especificada no existe",
+
+            })
+        }
+
+        //creamos el producto en la base de datos
+
+        const newProduct = await Product.create({
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            stock: data.stock,
+            //despues se debe cambiar ya que el unico que puede crear productos es el admin
+            created_by: 1
+        },{transaction}); //aseguramos que transaction funcione en el metodo create en caso que de error haga el rollback correspondiente
+
+        // Asociar la categoría con el setCategories que se genera automaticamente por sequelize cuando defino una relacion de muchos a muchos 
+        await newProduct.setCategories([data.categoryId], { transaction });
+
+        //crear las imagenes
+        const productImages = data.images.map(img => ({
+            product_id: newProduct.id,
+            image_url: img.image_url,
+            is_primary: img.is_primary,
+            created_at: new Date(),
+            updated_at: new Date()
+        }));
+
+        //usamos builk para insertar multiples objetos en este caso las imagenes guardadas en productImages
+        await ProductImage.bulkCreate(productImages, { transaction });
+
+        // Confirmar la transacción
+        await transaction.commit();
+
+        // Obtener el producto con sus relaciones
+        const createdProduct = await Product.findByPk(newProduct.id, {
+            include: [
+                { model: Category },
+                { model: ProductImage }
+            ]
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Producto creado exitosamente",
+            data: createdProduct
+        });
+
+    } catch (error) {
+        // Revertir la transacción en caso de error
+        await transaction.rollback();
+
+        console.error('Error al crear producto:', error);
+        return res.status(500).json({
+            success: false,
+            message: "Error interno del servidor"
+        });
+    }
+    // res.status(200).json({
+    //     message: "metodo para crear un producto"
+    // })
+
+
+}
+
 
 
 module.exports = {
-    getProducts
+    getProducts,
+    setProduct
 }
