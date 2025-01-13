@@ -110,7 +110,7 @@ const setProduct = async (req, res) => {
         //validar que vengan los datos con la biblioteca yup
         if (!isValid) {
             return res.status(400).json({
-                success: false,
+                success: "error",
                 errors
             });
         }
@@ -119,7 +119,7 @@ const setProduct = async (req, res) => {
         const category = await Category.findByPk(data.categoryId);
         if (!category) {
             return res.status(404).json({
-                succes: false,
+                succes: "error",
                 message: "La categoria especificada no existe",
 
             })
@@ -163,7 +163,7 @@ const setProduct = async (req, res) => {
         });
 
         return res.status(201).json({
-            success: true,
+            success: "success",
             message: "Producto creado exitosamente",
             data: createdProduct
         });
@@ -174,7 +174,7 @@ const setProduct = async (req, res) => {
 
         console.error('Error al crear producto:', error);
         return res.status(500).json({
-            success: false,
+            success: "error",
             message: "Error interno del servidor"
         });
     }

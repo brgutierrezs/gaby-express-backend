@@ -1,8 +1,8 @@
 
 
-const sendResponse  = (res, statusCode, success, message, data = null, errors = null ) => {
+const sendResponse  = (res, statusCode, status, message, data = null, errors = null ) => {
     res.status(statusCode).json({
-        success,
+        status,
         message,
         data,
         errors

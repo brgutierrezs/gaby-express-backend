@@ -12,8 +12,11 @@ router.get('/', (req, res) => {
 router.get('/all-user', userController.getUsers );
 
 //rutas relacionadas con usuarios
-router.get('/login', userController.login);
+router.post('/login', userController.login);
 router.put('/update-password/:userId', auth, userController.updatePassword);
+router.get('/get-cookie', auth, userController.getCookie );
+router.get('/clean-cookie', userController.cleanCookie );
+router.get('/get-profile', auth,userController.getprofile );
 
 
 module.exports = router;

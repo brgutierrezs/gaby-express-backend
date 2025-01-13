@@ -16,9 +16,10 @@ app.use(helmet()); // Añade headers de seguridad
 
 // Configuración de CORS más específica (opcional)
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*', // Puedes especificar orígenes permitidos
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // Puedes especificar orígenes permitidos
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'] // Headers permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Headers permitidos
+  credentials: true, // Permite enviar cookies
 }));
 
 // Middleware de parseo y logging
