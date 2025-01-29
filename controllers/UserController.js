@@ -1,5 +1,5 @@
 //const User = require('../models/User');
-const { User, Order, Review, Address} = require("../models/index");
+const { User, Order, Review, Address } = require("../models/index");
 const { sendResponse } = require('../helpers/response');
 const bcrypt = require('bcrypt')
 const { generateToken } = require('../services/token/jwt');
@@ -36,7 +36,7 @@ const login = async (req, res) => {
         //recoger los parametros
         const { email, password } = req.body;
         const remember = req.query.remember;
-        console.log(email,password)
+        console.log(email, password)
 
 
         //verificar que el usuario no ingreso datos vacios 
@@ -58,6 +58,11 @@ const login = async (req, res) => {
         const validPassword = bcrypt.compareSync(password, userLogin.password_hash);
         if (!validPassword) {
             return sendResponse(res, 401, false, "Contraseña incorrecta");
+        }
+
+        // //preguntar si el usuario encontrado esta activo
+        if (!userLogin.is_active) {
+            return sendResponse(res, 401, false, "Su cuenta se encuentra desactivada")
         }
 
         //Generar tokens usando la funcion generateToken
@@ -86,7 +91,8 @@ const login = async (req, res) => {
         return sendResponse(res, 200, true, "Login exitoso", {
             userId: userLogin.id,
             email: userLogin.email,
-            name: userLogin.name
+            name: userLogin.name,
+            
         });
 
 
@@ -108,7 +114,7 @@ const getprofile = async (req, res) => {
         const userId = req.user.id;
 
         //hacemos la consulta a la base de datos con la informacion necesaria
-         const userProfile = await User.findByPk(userId, {
+        const userProfile = await User.findByPk(userId, {
             attributes: {
                 exclude: ['password_hash'] // Excluir la contraseña
             },
@@ -130,9 +136,9 @@ const getprofile = async (req, res) => {
                 //agregamos los datos de envio del usuario
                 {
                     model: Address,
-                    attributes: ['id', 'user_id', 'region', 'comuna', 'address_line', 'phone','is_primary'],
+                    attributes: ['id', 'user_id', 'region', 'comuna', 'address_line', 'phone', 'is_primary'],
                     limit: 3,
-                    
+
                 }
 
 
@@ -145,7 +151,17 @@ const getprofile = async (req, res) => {
             return sendResponse(res, 404, "error", "Perfil no encontrado");
         };
 
-        return sendResponse(res, 200, "success", "Perfil obtenido", userProfile);
+        //si se encontro preguntamos si es un perfil activo
+        if(!userProfile.is_active) {
+            return sendResponse(res, 400, "error", "Su perfil no esta activo");
+        }
+
+        // return sendResponse(res, 200, "success", "Perfil obtenido", userProfile);
+        return res.status(200).json({
+            status: "success",
+            message: "Perfil obtenido",
+            user: userProfile
+        })
 
 
     } catch (error) {

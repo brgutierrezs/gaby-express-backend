@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 const { validateProduct } = require('../helpers/validations/productSchema');
 const { sequelize } = require('../config/database');
 
-//endpoint para obtener todos los productos
+//endpoint pa   ra obtener todos los productos
 const getProducts = async (req, res) => {
 
 
