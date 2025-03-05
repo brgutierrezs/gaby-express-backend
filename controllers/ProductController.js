@@ -16,7 +16,8 @@ const getProducts = async (req, res) => {
             order = 'id',
             sort = 'DESC',
             search = '',
-            id = ''
+            id = '',
+            categoryId= ''
 
         } = req.query;
 
@@ -31,6 +32,18 @@ const getProducts = async (req, res) => {
 
         //     ]
         // } : {};
+
+
+        const categoryFilter =  categoryId ? {
+            model: Category,
+            where: {id : categoryId},
+            attributes: ['id', 'name'],
+            through: { attributes: [] } 
+        }: {
+            model: Category,
+            attributes: ['id', 'name']
+        };
+
 
         const whereCondition = {
             ...(search && {
@@ -52,13 +65,7 @@ const getProducts = async (req, res) => {
                 exclude: ['createdBy', 'updatedBy', 'passwordHash'] // Excluir campos sensibles
             },
             include: [
-                {
-                    model: Category,
-                    attributes: ['id', 'name'],
-                    through: {
-                        attributes: [] // Esto evita incluir los campos de la tabla de unión
-                    }
-                },
+                categoryFilter,
                 {
                     model: ProductImage,
                     attributes: ['id', 'image_url'],
@@ -134,7 +141,7 @@ const setProduct = async (req, res) => {
             stock: data.stock,
             //despues se debe cambiar ya que el unico que puede crear productos es el admin
             created_by: 1
-        },{transaction}); //aseguramos que transaction funcione en el metodo create en caso que de error haga el rollback correspondiente
+        }, { transaction }); //aseguramos que transaction funcione en el metodo create en caso que de error haga el rollback correspondiente
 
         // Asociar la categoría con el setCategories que se genera automaticamente por sequelize cuando defino una relacion de muchos a muchos 
         await newProduct.setCategories([data.categoryId], { transaction });
@@ -163,7 +170,7 @@ const setProduct = async (req, res) => {
         });
 
         return res.status(201).json({
-            success: "success",
+            status: "success",
             message: "Producto creado exitosamente",
             data: createdProduct
         });
@@ -172,10 +179,10 @@ const setProduct = async (req, res) => {
         // Revertir la transacción en caso de error
         await transaction.rollback();
 
-        console.error('Error al crear producto:', error);
         return res.status(500).json({
-            success: "error",
-            message: "Error interno del servidor"
+            status: "error",
+            message: "Error interno del servidor " + error.message
+
         });
     }
     // res.status(200).json({
@@ -185,9 +192,35 @@ const setProduct = async (req, res) => {
 
 }
 
+const getCategory = async (req, res) => {
+
+    try {
+
+        const categories = await Category.findAll();
+
+        res.status(200).json({
+            status:"success",
+            message:"Listado de todas las categorias",
+            categories: categories
+        });
+
+        // return res.status(200).json({
+        //     status:"success",
+        //     message:"Prueba Metodo Obtener Categorias"
+        // })
+
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "error al obtener las categorias " + error.message
+        })
+    }
+}
+
 
 
 module.exports = {
     getProducts,
-    setProduct
+    setProduct,
+    getCategory
 }

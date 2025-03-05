@@ -8,7 +8,7 @@ const validateRequest = (schema) => async (req, res, next) => {
     } catch (error) {
         return res.status(400).json({
             status: 'error',
-            message: "Error inesperado " + error.errors
+            message: error.errors
         });
     }
 };

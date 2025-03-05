@@ -10,8 +10,6 @@ const getUsers = async (req, res) => {
 
     try {
 
-        console.log('intentando obtener los usuarios...')
-
         const users = await User.findAll();
 
         console.log('usuarios encontrados', users);
@@ -19,7 +17,7 @@ const getUsers = async (req, res) => {
         res.status(200).json(users);
     } catch (error) {
         console.error('Error completo:', error);
-        res.status(500).json({
+      return  res.status(500).json({
             status: 'error',
             message: 'Error al obtener los usuarios',
             errorName: error.name,
@@ -35,7 +33,7 @@ const login = async (req, res) => {
         // Recoger los parámetros
         const { password, email, username } = req.body;
         const remember = req.query.remember;
-        console.log(email, password)
+        
         
         // Verificar que el usuario proporcionó al menos un identificador (email o username) y contraseña
         if (!password || (!email && !username)) {
@@ -96,7 +94,7 @@ const login = async (req, res) => {
         return sendResponse(res, 200, true, "Login exitoso", {
             userId: userLogin.id,
             email: userLogin.email,
-            name: userLogin.name
+            username: userLogin.username
         });
 
 
@@ -292,6 +290,7 @@ const register = async (req, res) => {
 
         //traer datos del formulario
         const { username, email, password } = req.body;
+        console.log( 'datos',username,email, password)
 
         //Los datos se validan en el midleware
 
